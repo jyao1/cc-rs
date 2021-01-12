@@ -1421,7 +1421,7 @@ impl Build {
                 // Disable generation of PIC on bare-metal for now: rust-lld doesn't support this yet
                 if self
                     .pic
-                    .unwrap_or(!target.contains("windows") && !target.contains("-none-"))
+                    .unwrap_or(!target.contains("windows") && !target.contains("-none-") && !target.contains("uefi"))
                 {
                     cmd.push_cc_arg("-fPIC".into());
                     // PLT only applies if code is compiled with PIC support,
@@ -1467,6 +1467,12 @@ impl Build {
                             let ios = if arch == "arm64" { "ios" } else { "ios13.0" };
                             cmd.args
                                 .push(format!("--target={}-apple-{}-macabi", arch, ios).into());
+                        }
+                    } else if target.contains("uefi") {
+                        if target.contains("x86_64") {
+                            cmd.args.push("--target=x86_64-unknown-windows-gnu".into());
+                        } else {
+                            cmd.args.push("--target=i686-unknown-windows-gnu".into())
                         }
                     } else {
                         cmd.args.push(format!("--target={}", target).into());
